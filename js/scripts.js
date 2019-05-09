@@ -140,7 +140,7 @@
       if (thumbnailUrl) {
         thumbnailUrl = thumbnailUrl.replace('-S.jpg', '-M.jpg');
       } else {
-        thumbnailUrl = '/no-image.jpg';
+        thumbnailUrl = '/img/no-image.jpg';
       }
       var $imageElement = document.createElement('img');
       $imageElement.setAttribute('src', thumbnailUrl);
