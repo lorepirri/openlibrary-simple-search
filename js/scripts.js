@@ -156,11 +156,20 @@
         }
       });
       
-      $modalContainer.addClass('is-visible');
+      $modalContainer
+        .addClass('is-visible')
+        .velocity({ opacity: 1.0 });
     }
     
     function hide() {
-      $modalContainer.removeClass('is-visible');
+      $modalContainer
+        .velocity({ opacity: 0.0 }, {
+          complete: function($elements) { 
+            $elements.forEach(function($element) {
+              $($element).removeClass('is-visible');
+            })
+          }
+        });        
     }
 
     function isVisible() {
@@ -265,15 +274,15 @@
         // Now the data is loaded!
         
         // If there are any books and the list container
-        // exists, go through all of them and append them to it        
+        // exists, go through all of them and append them to it
         var listOfBooks = bookRepository.getAll();
         if (listOfBooks.length == 0) {
           noBooksFound($booksListContainer);
         } else {
           listOfBooks.forEach(function(book) {
-          // append each book to the specified <ul> element
-          addListItem(book, $booksListContainer);
-        });
+            // append each book to the specified <ul> element
+            addListItem(book, $booksListContainer);
+          });          
         }
       })
       .finally(function () {

@@ -204,7 +204,8 @@ footer .social .social-icon {
 #modal-container.is-visible {
   
   /* this is used to center the modal */
-  display: grid;  
+  display: grid;
+  opacity: 0.0;
 }
 
 .modal {
