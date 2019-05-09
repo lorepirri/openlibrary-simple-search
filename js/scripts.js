@@ -58,7 +58,6 @@
     function searchBooks(searchQuery, limit=10) {
       // escape the search term for URL usage
       var escapedSearchQuery = encodeURIComponent(searchQuery);
-      console.log(escapedSearchQuery);
       var apiUrl = `https://openlibrary.org/search.json?q=${escapedSearchQuery}&limit=${limit}`;
       return fetch(apiUrl)
         .then(function (response) {
