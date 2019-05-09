@@ -241,6 +241,14 @@
     });
   }
 
+  function noBooksFound($booksListContainer) {
+
+    // create main <li> element containing the button
+    var $listItemElement = $('<li class="books-list__item">No books found. Try again.</li>');
+    // appent the <li> element to the DOM, to the specified <ul>
+    $booksListContainer.append($listItemElement);
+  }
+
   function clearListItems($booksListContainer) {
     $booksListContainer.empty();
   }
@@ -258,10 +266,15 @@
         
         // If there are any books and the list container
         // exists, go through all of them and append them to it        
-        bookRepository.getAll().forEach(function(book) {
+        var listOfBooks = bookRepository.getAll();
+        if (listOfBooks.length == 0) {
+          noBooksFound($booksListContainer);
+        } else {
+          listOfBooks.forEach(function(book) {
           // append each book to the specified <ul> element
           addListItem(book, $booksListContainer);
         });
+        }
       })
       .finally(function () {
         // hide list loading spinner
