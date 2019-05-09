@@ -82,17 +82,14 @@
 
     function loadDetails(book) {
       var url = `https://openlibrary.org/api/books.json?bibkeys=${book.lastEditionKey}`;
-      return fetch(url)
-        .then(function (response) {
-          // this returns a promise
-          return response.json();
-        })
-        .then(function (details) {
+
+      return $.ajax(url, { dataType: 'json' })
+        .done(function (response) {
           // Now we add the details to the item
-          book.thumbnailUrl = details[book.lastEditionKey].thumbnail_url
-          book.previewUrl = details[book.lastEditionKey].preview_url;
+          book.thumbnailUrl = response[book.lastEditionKey].thumbnail_url;
+          book.previewUrl = response[book.lastEditionKey].preview_url;
         })
-        .catch(function (e) {
+        .fail(function (e) {
           console.error(e);
         });
     }
@@ -115,66 +112,60 @@
 
   var modalDetails = (function () {
 
-    var $modalContainer = document.querySelector('#modal-container');
+    var $modalContainer = $('#modal-container');
 
     function show({title, authors, thumbnailUrl, previewUrl}) {
       // Clear all existing modal content
-      $modalContainer.innerHTML = '';
+      $modalContainer.empty();
     
-      var $modal = document.createElement('div');
-      $modal.classList.add('modal');
+      var $modal = $('<div class="modal"></div>');
     
-      // Add the new modal content
-      var $closeButtonElement = document.createElement('button');
-      $closeButtonElement.classList.add('modal-close');
-      $closeButtonElement.innerText = 'Close';
-      // add event listener to close the modal
-      $closeButtonElement.addEventListener('click', hide);
-      
-      var $titleElement = document.createElement('h1');
-      $titleElement.innerText = title;
-      
-      $modal.appendChild($closeButtonElement);
-      $modal.appendChild($titleElement);
+      // add the new modal content
 
+      var $closeButtonElement = $('<button class="modal-close">Close</button>');
+      // add event listener to close the modal
+      $closeButtonElement.on('click', hide);
+      $modal.append($closeButtonElement);
+      
+      var $titleElement = $(`<h1>${title}</h1>`);
+      $modal.append($titleElement);
+      
       if (thumbnailUrl) {
         thumbnailUrl = thumbnailUrl.replace('-S.jpg', '-M.jpg');
       } else {
         thumbnailUrl = 'img/no-image.jpg';
       }
-      var $imageElement = document.createElement('img');
-      $imageElement.setAttribute('src', thumbnailUrl);
-      $modal.appendChild($imageElement);
+      var $imageElement = $(`<img src="${thumbnailUrl}" alt="${title}">`);
+      $modal.append($imageElement);
       
       if (authors) {
-        var $contentElement = document.createElement('p');
         // useless filter attempt, as there are many 'null null' or 'john null' in
         // their database
         authors = authors.filter( (a) => a.toLowerCase() != 'null').join(', ');
-        $contentElement.innerText = `Author(s): ${authors}`;
-        $modal.appendChild($contentElement);
+        var $contentElement = $(`<p>Author(s): ${authors}</p>`);
+        $modal.append($contentElement);
       }
     
-      $modalContainer.appendChild($modal);
+      $modalContainer.append($modal);
     
-      $modalContainer.addEventListener('click', (e) => {
+      $modalContainer.on('click', (e) => {
         // Since this is also triggered when clicking INSIDE the modal
         // We only want to close if the user clicks directly on the overlay
-        var $target = e.target;
-        if ($target === $modalContainer) {
+        var $target = $(e.target);
+        if ($target.is($modalContainer)) {
           hide();
         }
       });
       
-      $modalContainer.classList.add('is-visible');
+      $modalContainer.addClass('is-visible');
     }
     
     function hide() {
-      $modalContainer.classList.remove('is-visible');
+      $modalContainer.removeClass('is-visible');
     }
 
     function isVisible() {
-      return $modalContainer.classList.contains('is-visible');
+      return $modalContainer.hasClass('is-visible');
     }
 
     // exposed public functions
@@ -187,24 +178,24 @@
   
 
   function showLoadingMessage($listSpinnerSpan) {
-    $listSpinnerSpan.classList.add('list-spinner');
+    $listSpinnerSpan.addClass('list-spinner');
   }
 
   function hideLoadingMessage($listSpinnerSpan) {
-    $listSpinnerSpan.classList.remove('list-spinner');
+    $listSpinnerSpan.removeClass('list-spinner');
   }
 
   function showButtonSpinner({lastEditionKey}) {
     var target_id = '#' + BUTTON_SPINNER_ID_PREFIX + lastEditionKey;
-    var $spinnerSpan = document.querySelector(target_id);
+    var $spinnerSpan = $(target_id);
     if ($spinnerSpan) {
-      $spinnerSpan.classList.add('button-spinner');
+      $spinnerSpan.addClass('button-spinner');
     }
     return $spinnerSpan;
   }
   
   function hideButtonSpinner($spinnerSpan) {
-    $spinnerSpan.classList.remove('button-spinner');
+    $spinnerSpan.removeClass('button-spinner');
   }
 
   function showDetails(book) {
@@ -212,11 +203,11 @@
     var $spinnerSpan = showButtonSpinner(book);
     // load details
     bookRepository.loadDetails(book)
-      .then(function () {
+      .done(function () {
         // show the modal of the details of the book
         modalDetails.show(book);
       })
-      .finally(function () {
+      .always(function () {
         // hide loading spinner in the button
         hideButtonSpinner($spinnerSpan);
       });
@@ -229,43 +220,34 @@
     var { title, lastEditionKey } = book;
 
     // create main <li> element containing the button
-    var $listItemElement = document.createElement('li');
-    // add a class to it
-    $listItemElement.classList.add('books-list__item');
+    var $listItemElement = $('<li class="books-list__item"></li>');
         
-    // button
-    var $bookInfoDetailsButton = document.createElement('button');
-    // simple text element for the button (the title of the book)
-    var $bookInfoDetailsButtonText = document.createTextNode(title);
+    // button (the title of the book)
+    var $bookInfoDetailsButton = $(`<button>${title}</button>`);
     // span for the spinner within the button
-    var $spinnerSpan = document.createElement('span');
-    $spinnerSpan.setAttribute('id', BUTTON_SPINNER_ID_PREFIX + lastEditionKey);
-
-    // add the text element to the button element
-    $bookInfoDetailsButton.appendChild($bookInfoDetailsButtonText);
+    var spinnerSpanId = BUTTON_SPINNER_ID_PREFIX + lastEditionKey;
+    var $spinnerSpan = $(`<span id="${spinnerSpanId}"></span>`);    
     // add the span for the spinner
-    $bookInfoDetailsButton.appendChild($spinnerSpan);
+    $bookInfoDetailsButton.append($spinnerSpan);
 
     // appent the button to the <li> element
-    $listItemElement.appendChild($bookInfoDetailsButton);
+    $listItemElement.append($bookInfoDetailsButton);
 
     // appent the <li> element to the DOM, to the specified <ul>
-    $booksListContainer.appendChild($listItemElement);
+    $booksListContainer.append($listItemElement);
 
     // add an event listener for the button, which was just appended to the DOM
-    $bookInfoDetailsButton.addEventListener('click', function(event) {
+    $bookInfoDetailsButton.on('click', function(event) {
       showDetails(book);
     });
   }
 
   function clearListItems($booksListContainer) {
-    while ($booksListContainer.firstChild) {
-      $booksListContainer.removeChild($booksListContainer.firstChild);
-    }    
+    $booksListContainer.empty();
   }
+
   function searchBooks(searchQuery, $booksListContainer) {
 
-          
     // clear the existing results
     clearListItems($booksListContainer);
     bookRepository.clear();
@@ -290,23 +272,23 @@
 
   // the the <ul> element where to append all the <li> elements
   // each representing a book card
-  var $booksListContainer = document.querySelector('.books-list');
+  var $booksListContainer = $('.books-list');
 
   if ($booksListContainer) {
     // if the <ul> is existing, load the data from server and 
     // then populate the list with books from the repository
 
     // div for the spinner within the button
-    var $listSpinnerDiv = document.createElement('div');
+    var $listSpinnerDiv = $('<div></div>');
     // appent the div to the <ul>
-    $booksListContainer.parentNode.insertBefore($listSpinnerDiv, $booksListContainer);
+    $listSpinnerDiv.insertBefore($booksListContainer);
     
-    var $searchForm = document.querySelector('#search-form');
+    var $searchForm = $('#search-form');
     // add a submit listener to the form
-    $searchForm.addEventListener('submit', (e) => {
+    $searchForm.on('submit', (e) => {
       e.preventDefault(); // Do not submit to the server
   
-      var searchQuery = e.target.querySelector('#search-query').value;
+      var searchQuery = $('#search-query').val();
       // start a search only if search term is not empty
       if (searchQuery.trim().length > 0) {
         // show list loading spinner
@@ -316,7 +298,7 @@
     })
   } // end if ($booksListContainer)
   
-  window.addEventListener('keydown', (e) => {
+  $(window).on('keydown', (e) => {
     // if the user presses the ESC key the modal should be hidden if it is already not
     if (e.key === 'Escape' && modalDetails.isVisible()) {
       modalDetails.hide();
