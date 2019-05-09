@@ -1,7 +1,7 @@
 (function () {
   
   // this is added as prefix to the id of the spinner span
-  var BUTTON_SPINNER_ID_PREFIX = 'spinner-'
+  var BUTTON_SPINNER_ID_PREFIX = 'spinner-';
 
   var bookRepository = (function () {
 
@@ -77,7 +77,7 @@
         })
         .catch(function (e) {
           console.error(e);
-        })
+        });
     }
 
     function loadDetails(book) {
@@ -200,7 +200,7 @@
     if ($spinnerSpan) {
       $spinnerSpan.classList.add('button-spinner');
     }
-    return $spinnerSpan
+    return $spinnerSpan;
   }
   
   function hideButtonSpinner($spinnerSpan) {
@@ -209,7 +209,7 @@
 
   function showDetails(book) {
     // show loading spinner in the button
-    var $spinnerSpan = showButtonSpinner(book)
+    var $spinnerSpan = showButtonSpinner(book);
     // load details
     bookRepository.loadDetails(book)
       .then(function () {
