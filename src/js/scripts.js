@@ -16,7 +16,7 @@
       // validate the input as an object with the same properties
       // as the ones in the repository
 
-      var properties = Object.keys(book);      
+      var properties = Object.keys(book);
       var result = (typeof book === 'object')
                 && (requiredProperties.length === properties.length)
                 && requiredProperties.every(function(property) { return properties.indexOf(property) >= 0; });
