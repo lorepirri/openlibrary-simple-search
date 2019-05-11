@@ -55,10 +55,13 @@
         return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
     }
     
-    function searchBooks(searchQuery, limit=10) {
+    function searchBooks(searchQuery, limit) {
+      if (!limit) {
+        limit = 10;
+      }
       // escape the search term for URL usage
       var escapedSearchQuery = encodeURIComponent(searchQuery);
-      var apiUrl = `https://openlibrary.org/search.json?q=${escapedSearchQuery}&limit=${limit}`;
+      var apiUrl ='https://openlibrary.org/search.json?q=' + escapedSearchQuery + '&limit=${limit}';
       return fetch(apiUrl)
         .then(function (response) {
           // this returns a promise
@@ -80,7 +83,7 @@
     }
 
     function loadDetails(book) {
-      var url = `https://openlibrary.org/api/books.json?bibkeys=${book.lastEditionKey}`;
+      var url = 'https://openlibrary.org/api/books.json?bibkeys=' + book.lastEditionKey;
 
       return $.ajax(url, { dataType: 'json' })
         .done(function (response) {
@@ -113,7 +116,11 @@
 
     var $modalContainer = $('#modal-container');
 
-    function show({title, authors, thumbnailUrl, previewUrl}) {
+    function show(book) {
+      var title = book.title;
+      var authors = book.authors;
+      var thumbnailUrl = book.thumbnailUrl;
+
       // Clear all existing modal content
       $modalContainer.empty();
     
@@ -126,7 +133,7 @@
       $closeButtonElement.on('click', hide);
       $modal.append($closeButtonElement);
       
-      var $titleElement = $(`<h1>${title}</h1>`);
+      var $titleElement = $('<h1>' + title + '</h1>');
       $modal.append($titleElement);
       
       if (thumbnailUrl) {
@@ -134,20 +141,20 @@
       } else {
         thumbnailUrl = 'img/no-image.jpg';
       }
-      var $imageElement = $(`<img src="${thumbnailUrl}" alt="${title}">`);
+      var $imageElement = $('<img src="' + thumbnailUrl +'" alt="' + title +'">');
       $modal.append($imageElement);
       
       if (authors) {
         // useless filter attempt, as there are many 'null null' or 'john null' in
         // their database
-        authors = authors.filter( (a) => a.toLowerCase() != 'null').join(', ');
-        var $contentElement = $(`<p>Author(s): ${authors}</p>`);
+        authors = authors.filter( function(a) { return a.toLowerCase() != 'null'; }).join(', ');
+        var $contentElement = $('<p>Author(s): ' + authors + '</p>');
         $modal.append($contentElement);
       }
     
       $modalContainer.append($modal);
     
-      $modalContainer.on('click', (e) => {
+      $modalContainer.on('click', function(e) {
         // Since this is also triggered when clicking INSIDE the modal
         // We only want to close if the user clicks directly on the overlay
         var $target = $(e.target);
@@ -167,7 +174,7 @@
           complete: function($elements) { 
             $elements.forEach(function($element) {
               $($element).removeClass('is-visible');
-            })
+            });
           }
         });        
     }
@@ -193,7 +200,8 @@
     $listSpinnerSpan.removeClass('list-spinner');
   }
 
-  function showButtonSpinner({lastEditionKey}) {
+  function showButtonSpinner(book) {
+    var lastEditionKey = book.lastEditionKey;
     var target_id = '#' + BUTTON_SPINNER_ID_PREFIX + lastEditionKey;
     var $spinnerSpan = $(target_id);
     if ($spinnerSpan) {
@@ -225,16 +233,17 @@
 
     // create and append a book button to the specified <ul> element
 
-    var { title, lastEditionKey } = book;
+    var title = book.title;
+    var lastEditionKey = book.lastEditionKey;
 
     // create main <li> element containing the button
     var $listItemElement = $('<li class="books-list__item"></li>');
         
     // button (the title of the book)
-    var $bookInfoDetailsButton = $(`<button>${title}</button>`);
+    var $bookInfoDetailsButton = $('<button>' + title +'</button>');
     // span for the spinner within the button
     var spinnerSpanId = BUTTON_SPINNER_ID_PREFIX + lastEditionKey;
-    var $spinnerSpan = $(`<span id="${spinnerSpanId}"></span>`);    
+    var $spinnerSpan = $('<span id="' + spinnerSpanId + '"></span>');    
     // add the span for the spinner
     $bookInfoDetailsButton.append($spinnerSpan);
 
@@ -306,7 +315,7 @@
     
     var $searchForm = $('#search-form');
     // add a submit listener to the form
-    $searchForm.on('submit', (e) => {
+    $searchForm.on('submit', function(e) {
       e.preventDefault(); // Do not submit to the server
   
       var searchQuery = $('#search-query').val();
@@ -316,10 +325,10 @@
         showLoadingMessage($listSpinnerDiv);
         searchBooks(searchQuery, $booksListContainer);
       }
-    })
+    });
   } // end if ($booksListContainer)
   
-  $(window).on('keydown', (e) => {
+  $(window).on('keydown', function(e) {
     // if the user presses the ESC key the modal should be hidden if it is already not
     if (e.key === 'Escape' && modalDetails.isVisible()) {
       modalDetails.hide();
