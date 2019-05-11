@@ -16,7 +16,6 @@
       // validate the input as an object with the same properties
       // as the ones in the repository
 
-      var result = false;
       var properties = Object.keys(book);      
       var result = (typeof book === 'object')
                 && (requiredProperties.length === properties.length)
@@ -30,7 +29,7 @@
       if (validate(book)) {
         repository.push(book);
       } else {
-        console.error("Error: you are trying to add a non valid object to the repository");
+        console.error('Error: you are trying to add a non valid object to the repository');
       }
     }
   
@@ -48,11 +47,6 @@
       }      
       
       return repository.filter(filterByTitle);
-    }
-
-    function _getURLParameter(name) {
-        // https://stackoverflow.com/questions/1403888/get-escaped-url-parameter
-        return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
     }
     
     function searchBooks(searchQuery, limit) {
@@ -254,7 +248,7 @@
     $booksListContainer.append($listItemElement);
 
     // add an event listener for the button, which was just appended to the DOM
-    $bookInfoDetailsButton.on('click', function(event) {
+    $bookInfoDetailsButton.on('click', function() {
       showDetails(book);
     });
   }
